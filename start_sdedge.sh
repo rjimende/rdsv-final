@@ -81,6 +81,7 @@ echo "IPCTL = $IPCTL"
 ## 2. Iniciar el Servicio OpenVirtualSwitch en wan VNF:
 echo "## 2. Iniciar el Servicio OpenVirtualSwitch en wan VNF"
 $WAN_EXEC service openvswitch-switch start
+$CTL_EXEC service openvswitch-switch start
 
 ## 3. En VNF:access agregar un bridge y sus vxlans
 echo "## 3. En VNF:access agregar un bridge y sus vxlan"

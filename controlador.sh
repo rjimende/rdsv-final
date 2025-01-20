@@ -56,7 +56,7 @@ fi
 if [[ ! $VWAN =~ "-wanchart"  ]]; then
    echo ""       
    echo "ERROR: incorrect <wan_deployment_id>: $VWAN"
-   exit 1
+   exit 1manager
 fi
 
 if [[ ! $VCTL =~ "-ctrlchart"  ]]; then
@@ -93,8 +93,7 @@ echo "PORTCTL = $PORTCTL"
 
 ## 2. En VNF:ctl arrancar controlador SDN"
 echo "## 2. En VNF:ctl arrancar controlador SDN"
-$CTL_EXEC /usr/local/bin/ryu-manager flowmanager/flowmanager.py ryu.app.ofctl_rest 2>&1 | tee ryu.log &
-$CTL_EXEC ryu-manager ryu.app.rest_qos ryu.app.rest_conf_switch ./qos_simple_switch_13.py &
+$CTL_EXEC ryu-manager flowmanager/flowmanager.py ryu.app.ofctl_rest ryu.app.rest_qos ryu.app.rest_conf_switch ./qos_simple_switch_13.py 2>&1 | tee ryu.log & 
 
 ## 3. En VNF:wan activar el modo SDN del conmutador
 echo "## 3. En VNF:wan activar el modo SDN del conmutador"
@@ -103,7 +102,7 @@ $WAN_EXEC ovs-vsctl set bridge brwan protocols=OpenFlow10,OpenFlow12,OpenFlow13
 $WAN_EXEC ovs-vsctl set-fail-mode brwan secure
 $WAN_EXEC ovs-vsctl set bridge brwan other-config:datapath-id=0000000000000001
 $WAN_EXEC ovs-vsctl set-controller brwan tcp:$IPCTL:6633
-$WAN_EXEC ovs-vsctl set-manager ptcp:6632
+$WAN_EXEC ovs-vsctl set-manager ptcp:6633
 
 ## 4. En VNF:cpe activar el modo SDN del conmutador
 echo "## 4. En VNF:cpe activar el modo SDN del conmutador"
@@ -112,7 +111,6 @@ $CPE_EXEC ovs-vsctl set bridge brwan protocols=OpenFlow10,OpenFlow12,OpenFlow13
 $CPE_EXEC ovs-vsctl set-fail-mode brwan secure
 $CPE_EXEC ovs-vsctl set bridge brwan other-config:datapath-id=0000000000000002
 $CPE_EXEC ovs-vsctl set-controller brwan tcp:$IPCTL:6633
-$CPE_EXEC ovs-vsctl set-manager ptcp:6632
 
 ## 5. En VNF:access activar el modo SDN del conmutador
 echo "## 5. En VNF:access activar el modo SDN del conmutador"
@@ -121,18 +119,20 @@ $ACC_EXEC ovs-vsctl set bridge brwan protocols=OpenFlow10,OpenFlow12,OpenFlow13
 $ACC_EXEC ovs-vsctl set-fail-mode brwan secure
 $ACC_EXEC ovs-vsctl set bridge brwan other-config:datapath-id=0000000000000003
 $ACC_EXEC ovs-vsctl set-controller brwan tcp:$IPCTL:6633
-$ACC_EXEC ovs-vsctl set-manager ptcp:6632
 
+#TCP="tcp:$IPWAN:6633"
 
-TCP="tcp:$IPWAN:6632"
 
 ## 6. Aplica las reglas
 echo "## 6. Aplica las reglas"                   
-$CTL_EXEC curl -X PUT -d "$TCP" http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr
-$CTL_EXEC curl -X POST -d '{"port_name": "axswan", "type": "linux-htb", "max_rate": "10000000", "queues": [{"min_rate": "800000"}]}' http://localhost:8080/qos/queue/0000000000000001
-$CTL_EXEC curl -X POST -d '{"match": {"nw_dst": "10.20.1.2", "nw_proto": "UDP", "udp_dst": "5005"}, "actions":{"queue": "0"}}' http://localhost:8080/qos/rules/0000000000000001
-$CTL_EXEC  curl -X GET http://localhost:8080/qos/rules/0000000000000001
+curl -X PUT -d "\"tcp:$IPWAN:6633\"" http://localhost:$PORTCTL/v1.0/conf/switches/0000000000000001/ovsdb_addr
+sleep 5
+curl -X POST -d '{"port_name": "axswan", "type": "linux-htb", "max_rate": "3000000", "queues": [{"min_rate": "1000000}]}' http://localhost:$PORTCTL/qos/queue/0000000000000001
+sleep 5
+curl -X POST -d '{"match": {"nw_dst": "10.20.1.2", "nw_proto": "UDP", "udp_dst": "5005"}, "actions":{"queue": "0"}}' http://localhost:$PORTCTL/qos/rules/0000000000000001
+sleep 5
+curl -X GET http://localhost:$PORTCTL/qos/rules/0000000000000001
 
-#echo "--"
-#echo "sdedge$NETNUM: abrir navegador para ver sus flujos Openflow:"
-#echo "firefox http://localhost:$PORTCTL/home/ &"
+echo "--"
+echo "sdedge$NETNUM: abrir navegador para ver sus flujos Openflow:"
+echo "firefox http://localhost:$PORTCTL/home/ &"
