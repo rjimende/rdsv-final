@@ -1,0 +1,30 @@
+loading app flowmanager/flowmanager.py
+loading app ryu.app.ofctl_rest
+loading app ryu.topology.switches
+loading app ryu.controller.ofp_handler
+instantiating app None of DPSet
+creating context dpset
+creating context wsgi
+instantiating app flowmanager/flowmanager.py of FlowManager
+Created flowmanager
+instantiating app ryu.topology.switches of Switches
+instantiating app ryu.app.ofctl_rest of RestStatsApi
+instantiating app ryu.controller.ofp_handler of OFPHandler
+Traceback (most recent call last):
+  File "/usr/local/bin/ryu-manager", line 9, in <module>
+    load_entry_point('ryu==4.31', 'console_scripts', 'ryu-manager')()
+You are using Python v2.7.12.final.0
+  File "/usr/local/lib/python2.7/dist-packages/ryu/cmd/manager.py", line 103, in main
+    webapp = wsgi.start_service(app_mgr)
+  File "/usr/local/lib/python2.7/dist-packages/ryu/app/wsgi.py", line 334, in start_service
+    return WSGIServer(instance)
+  File "/usr/local/lib/python2.7/dist-packages/ryu/app/wsgi.py", line 325, in __init__
+    application, **config)
+  File "/usr/local/lib/python2.7/dist-packages/ryu/lib/hub.py", line 127, in __init__
+    self.server = eventlet.listen(listen_info)
+  File "/usr/lib/python2.7/dist-packages/eventlet/convenience.py", line 43, in listen
+    sock.bind(addr)
+  File "/usr/lib/python2.7/socket.py", line 228, in meth
+    return getattr(self._sock,name)(*args)
+socket.error: [Errno 98] Address already in use
+command terminated with exit code 1
